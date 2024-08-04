@@ -6,6 +6,10 @@ import hello.proxy.pureproxy.proxy.code.RealSubject;
 import hello.proxy.pureproxy.proxy.code.Subject;
 import org.junit.jupiter.api.Test;
 
+/**
+ * Proxy Pattern 의 의도
+ * -> 다른 개체에 대한 "접근 제어" 하기 위한 대리자 제공
+ */
 public class ProxyPatternTest {
     @Test
     void noProxyTest() {

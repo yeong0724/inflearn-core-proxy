@@ -6,9 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class ThreadLocalLogTrace implements LogTrace {
-    private static final String START_PREFIX = "-->";
-    private static final String COMPLETE_PREFIX = "<--";
-    private static final String EX_PREFIX = "<X-";
+    private static final String START_PREFIX = "--> ";
+    private static final String COMPLETE_PREFIX = "<-- ";
+    private static final String EX_PREFIX = "<X- ";
 
     private final ThreadLocal<TraceId> traceIdHolder = new ThreadLocal<>();
 
@@ -32,14 +32,20 @@ public class ThreadLocalLogTrace implements LogTrace {
         complete(status, e);
     }
 
-    private void complete(TraceStatus status, Exception e) {
+    private void complete(TraceStatus status, Exception exception) {
         Long stopTimeMs = System.currentTimeMillis();
         long resultTimeMs = stopTimeMs - status.getStartTimeMs();
         TraceId traceId = status.getTraceId();
-        if (e == null) {
-            log.info("[{}] {}{} time={}ms", traceId.getId(), addSpace(COMPLETE_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMs);
+        if (exception == null) {
+            log.info("[{}] {}{} time = {} ms", traceId.getId(), addSpace(COMPLETE_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMs);
         } else {
-            log.info("[{}] {}{} time={}ms ex={}", traceId.getId(), addSpace(EX_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMs, e.toString());
+            log.info("[{}] {}{} time= {} ms | exception = {}",
+                    traceId.getId(),
+                    addSpace(EX_PREFIX, traceId.getLevel()),
+                    status.getMessage(),
+                    resultTimeMs,
+                    exception.toString()
+            );
         }
 
         releaseTraceId();
@@ -57,7 +63,7 @@ public class ThreadLocalLogTrace implements LogTrace {
     private void releaseTraceId() {
         TraceId traceId = traceIdHolder.get();
         if (traceId.isFirstLevel()) {
-            traceIdHolder.remove();//destroy
+            traceIdHolder.remove(); // destroy
         } else {
             traceIdHolder.set(traceId.createPreviousId());
         }
